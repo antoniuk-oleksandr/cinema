@@ -75,6 +75,7 @@ Do not replace these defaults casually. Record the trade-off and migration impac
 - Never place passwords, secrets, or unnecessary personal data in JWT claims.
 
 - Preserve consistent URL naming, versioning, validation, pagination, filtering, and error-response conventions.
+- Keep operational routes at the root: `/health/live`, `/health/ready`, `/metrics`, and `/info`. Keep Swagger UI and the OpenAPI schema at `/docs/` and `/schema/`. All business and authentication routes belong under the centrally mounted `/api/v1/` prefix; feature URL modules must define relative paths and must not repeat that prefix.
 - Follow RFC 7807 (`application/problem+json`) for all error responses, with stable problem types, titles, details, instance identifiers, and machine-readable extensions where needed.
 - Implement one centralized Django exception handler, equivalent in responsibility to Spring Boot's `@ExceptionHandler`/global exception handling. It owns conversion of known application/domain errors into HTTP responses.
 - Repositories must never throw or select HTTP status codes. They raise domain-specific exceptions when persistence or domain conditions fail.
