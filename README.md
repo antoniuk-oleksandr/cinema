@@ -86,8 +86,13 @@ GET /health/live   Process liveness only
 GET /health/ready  Dependency readiness, without dependency details
 GET /metrics       Prometheus metrics
 GET /info          Safe service metadata
-GET /api/docs/     Swagger UI when enabled by configuration
+GET /docs/         Swagger UI when enabled by configuration
+GET /schema/       OpenAPI schema when enabled by configuration
 ```
+
+All business and authentication endpoints are versioned under `/api/v1/`.
+Feature URL modules define relative paths such as `movies/`; the project
+router applies the `/api/v1/` prefix centrally.
 
 `/health/live` remains available when PostgreSQL, Redis, or RabbitMQ is down. `/health/ready` returns `503` when required dependencies are unavailable and does not expose their names publicly.
 
@@ -169,7 +174,7 @@ Useful local URLs:
 
 ```text
 API:         http://localhost:8000
-Swagger UI:  http://localhost:8000/api/docs/
+Swagger UI:  http://localhost:8000/docs/
 Grafana:     http://localhost:3000
 Prometheus:  http://localhost:9090
 Loki:        http://localhost:3100
@@ -194,7 +199,7 @@ just docs-serve
 ```
 
 Then open `http://localhost:8080`. Internal Python documentation is separate
-from the generated REST API documentation at `/api/docs/`.
+from the generated REST API documentation at `/docs/`.
 
 ## Testing approach
 
