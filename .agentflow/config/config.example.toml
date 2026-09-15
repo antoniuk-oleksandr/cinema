@@ -1,0 +1,10 @@
+[pipeline]
+max_iterations = 8
+agent_timeout_seconds = 3600
+[agents]
+developer = "developer"
+tester = "tester"
+reviewer = "reviewer"
+[notifications]
+desktop = true
+sound = true

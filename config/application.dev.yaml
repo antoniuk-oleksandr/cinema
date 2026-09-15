@@ -1,0 +1,11 @@
+app:
+  environment: dev
+
+django:
+  debug: false
+
+logging:
+  level: INFO
+
+api:
+  docs_enabled: false

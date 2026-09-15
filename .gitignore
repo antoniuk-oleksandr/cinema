@@ -1,0 +1,30 @@
+.env
+.env.*
+!.env.example
+
+# Local Python environments and packaging artifacts
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Python and test tooling caches
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.py[cod]
+
+# Local database/filesystem state
+*.sqlite3
+*.sqlite3-journal
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store

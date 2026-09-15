@@ -1,0 +1,120 @@
+name: cinema-local
+
+services:
+  api:
+    build: ../..
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-admin}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,api
+      OTEL_SERVICE_NAME: cinema-api
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4318
+      APP_PROFILE: local
+      APP_CONFIG_DIR: /etc/cinema
+    ports: ["${API_PORT:-8000}:8000"]
+    volumes: ["../../config:/etc/cinema:ro"]
+    depends_on:
+      postgres: {condition: service_started}
+      redis: {condition: service_started}
+      rabbitmq: {condition: service_started}
+      alloy: {condition: service_started}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  postgres:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-admin}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+    ports: ["${POSTGRES_PORT:-5432}:5432"]
+    # PostgreSQL 18 stores clusters below /var/lib/postgresql/<major>/docker.
+    # Mount the parent directory so pg_upgrade can work across major versions.
+    volumes: [postgres-data:/var/lib/postgresql]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8.10.1-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["${REDIS_PORT:-6379}:6379"]
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:4.3.5-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-admin}
+    ports: ["${RABBITMQ_PORT:-5672}:5672", "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"]
+    volumes: [rabbitmq-data:/var/lib/rabbitmq]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  prometheus:
+    image: prom/prometheus:v3.14.0
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus", "--web.enable-remote-write-receiver"]
+    ports: ["${PROMETHEUS_PORT:-9090}:9090"]
+    volumes: ["./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro", prometheus-data:/prometheus]
+
+  loki:
+    image: grafana/loki:3.7.7
+    command: ["-config.file=/etc/loki/config.yml"]
+    ports: ["${LOKI_PORT:-3100}:3100"]
+    volumes: ["./loki/config.yml:/etc/loki/config.yml:ro", loki-data:/loki]
+
+  tempo:
+    image: grafana/tempo:3.0.3
+    command: ["-config.file=/etc/tempo/config.yml"]
+    ports: ["${TEMPO_PORT:-3200}:3200"]
+    volumes: ["./tempo/config.yml:/etc/tempo/config.yml:ro", tempo-data:/var/tempo]
+
+  alloy:
+    image: grafana/alloy:v1.19.2
+    command: ["run", "/etc/alloy/config.alloy", "--storage.path=/var/lib/alloy/data", "--server.http.listen-addr=0.0.0.0:12345"]
+    ports: ["${ALLOY_PORT:-12345}:12345", "4317:4317", "4318:4318"]
+    volumes:
+      - "./alloy/config.alloy:/etc/alloy/config.alloy:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - alloy-data:/var/lib/alloy/data
+    depends_on: [loki, prometheus, tempo]
+
+  grafana:
+    image: grafana/grafana:13.2.2-slim
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin-local-only}
+    ports: ["${GRAFANA_PORT:-3000}:3000"]
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on: [loki, prometheus, tempo]
+
+volumes:
+  postgres-data:
+  redis-data:
+  rabbitmq-data:
+  prometheus-data:
+  loki-data:
+  tempo-data:
+  alloy-data:
+  grafana-data:

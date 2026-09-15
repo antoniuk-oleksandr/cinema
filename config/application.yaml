@@ -1,0 +1,19 @@
+app:
+  name: cinema
+  environment: local
+  version: 0.1.0
+
+django:
+  debug: true
+  allowed_hosts: [localhost, 127.0.0.1]
+
+logging:
+  level: INFO
+
+api:
+  port: 8000
+  docs_enabled: false
+
+observability:
+  service_name: cinema-api
+  otlp_endpoint: http://alloy:4318

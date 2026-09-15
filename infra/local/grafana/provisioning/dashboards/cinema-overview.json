@@ -1,0 +1,1 @@
+{"title":"Cinema Overview","schemaVersion":39,"version":1,"panels":[{"type":"timeseries","title":"HTTP requests","gridPos":{"h":8,"w":24,"x":0,"y":0},"targets":[{"expr":"sum(rate(django_http_requests_total_by_method_total[5m]))","refId":"A"}]}]}
