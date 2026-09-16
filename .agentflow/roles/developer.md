@@ -2,6 +2,9 @@
 
 You own production code for a cinema application. Do not expand the submitted feature beyond its requirements.
 
+When implementation work is complete, return `status: completed` and `route: tester`.
+Return only the exact `AgentResult` JSON object. Do not use custom fields such as `state`, `changes`, or `verification`.
+
 ## Technology and architecture
 
 - Use Python and Django.

@@ -16,14 +16,15 @@ def run(feature=None, task=None):
     title = feature.stem if feature else "Ad hoc feature"
     t = Task(title=title, description=text)
     from agentflow.adapters.codex import CodexAdapter
+    from agentflow.adapters.herdr import HerdrAdapter
 
     sessions = SessionStore(ROOT / "runtime/sessions.json").load()
+    timeout = Config.load(ROOT / "config/config.toml").pipeline.agent_timeout_seconds
     agents = {
-        n: CodexAdapter(
-            n,
-            ROOT,
-            Config.load(ROOT / "config/config.toml").pipeline.agent_timeout_seconds,
-            sessions[n],
+        n: (
+            HerdrAdapter(sessions[n], timeout)
+            if sessions[n] and sessions[n].startswith("herdr:pane:")
+            else CodexAdapter(n, ROOT, timeout, sessions[n])
         )
         for n in ("developer", "tester", "reviewer")
     }
@@ -115,9 +116,9 @@ def main() -> None:
     sub.add_parser("reset")
     a = p.parse_args()
     if a.command == "run":
-        raise SystemExit(
-            0 if run(Path(a.feature) if a.feature else None, a.task).value == "done" else 2
-        )
+        state = run(Path(a.feature) if a.feature else None, a.task)
+        print(f"Agentflow finished with state: {state.value}")
+        raise SystemExit(0 if state.value == "done" else 2)
     if a.command == "mock":
         mock(a.scenario)
     elif a.command == "doctor":

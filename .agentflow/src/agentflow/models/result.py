@@ -39,10 +39,15 @@ class AgentResult(BaseModel):
         if self.route == Route.DONE and self.status != AgentStatus.APPROVED:
             raise ValueError("done must be approved")
         if (
-            self.route in (Route.DEVELOPER, Route.TESTER, Route.BOTH)
+            self.route in (Route.DEVELOPER, Route.BOTH)
             and self.status != AgentStatus.CHANGES_REQUIRED
         ):
-            raise ValueError("change routes require changes_required")
+            raise ValueError("developer and both routes require changes_required")
+        if self.route == Route.TESTER and self.status not in (
+            AgentStatus.COMPLETED,
+            AgentStatus.CHANGES_REQUIRED,
+        ):
+            raise ValueError("tester route requires completed or changes_required")
         if self.status == AgentStatus.COMPLETED and self.route not in (
             Route.TESTER,
             Route.REVIEWER,

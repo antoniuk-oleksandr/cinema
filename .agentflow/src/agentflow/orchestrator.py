@@ -7,7 +7,7 @@ from pathlib import Path
 from agentflow.adapters.notifications import NotificationService
 from agentflow.agents.base import Agent, AgentContext
 from agentflow.config import Config
-from agentflow.models import Route, Task
+from agentflow.models import AgentStatus, Route, Task
 from agentflow.state import PipelineState
 
 
@@ -74,7 +74,11 @@ class Orchestrator:
                 new = PipelineState.TESTING
             elif self.state == PipelineState.TESTING and route == Route.DEVELOPER:
                 new = PipelineState.DEVELOPMENT
-            elif self.state == PipelineState.TESTING and route == Route.TESTER:
+            elif (
+                self.state == PipelineState.TESTING
+                and route == Route.TESTER
+                and result.status == AgentStatus.CHANGES_REQUIRED
+            ):
                 new = PipelineState.TESTING
             elif self.state == PipelineState.TESTING and route == Route.REVIEWER:
                 new = PipelineState.REVIEW
