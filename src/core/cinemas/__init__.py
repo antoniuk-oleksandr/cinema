@@ -1,0 +1,1 @@
+"""Cinema and hall domain."""

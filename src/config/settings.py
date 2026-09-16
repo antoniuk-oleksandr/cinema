@@ -1,19 +1,21 @@
 import os
 from pathlib import Path
+from typing import Any, cast
 
 from .yaml_config import load_config
 
 BASE_DIR = Path(__file__).resolve().parents[2]
-APP_CONFIG = load_config(BASE_DIR)
-APP = APP_CONFIG.get("app", {})
-DJANGO_CONFIG = APP_CONFIG.get("django", {})
-LOGGING_VALUES = APP_CONFIG.get("logging", {})
-OBSERVABILITY_CONFIG = APP_CONFIG.get("observability", {})
-API_CONFIG = APP_CONFIG.get("api", {})
+APP_CONFIG: dict[str, Any] = load_config(BASE_DIR)
+APP: dict[str, Any] = cast(dict[str, Any], APP_CONFIG.get("app", {}))
+DJANGO_CONFIG: dict[str, Any] = cast(dict[str, Any], APP_CONFIG.get("django", {}))
+LOGGING_VALUES: dict[str, Any] = cast(dict[str, Any], APP_CONFIG.get("logging", {}))
+OBSERVABILITY_CONFIG: dict[str, Any] = cast(dict[str, Any], APP_CONFIG.get("observability", {}))
+API_CONFIG: dict[str, Any] = cast(dict[str, Any], APP_CONFIG.get("api", {}))
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "local-only-change-me")
-DEBUG = os.getenv("DJANGO_DEBUG", str(DJANGO_CONFIG.get("debug", True))).lower() == "true"
+DEBUG = os.getenv("DJANGO_DEBUG", str(DJANGO_CONFIG.get("debug", True))).lower() == "true"  # pyright: ignore[reportAny]
 ALLOWED_HOSTS = os.getenv(
-    "DJANGO_ALLOWED_HOSTS", ",".join(DJANGO_CONFIG.get("allowed_hosts", ["localhost", "127.0.0.1"]))
+    "DJANGO_ALLOWED_HOSTS",
+    ",".join(DJANGO_CONFIG.get("allowed_hosts", ["localhost", "127.0.0.1"])),  # pyright: ignore[reportAny]
 ).split(",")
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
@@ -44,7 +46,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
-TEMPLATES = [
+TEMPLATES = [  # pyright: ignore[reportUnknownVariableType]
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [BASE_DIR / "templates"],
@@ -80,7 +82,7 @@ USE_I18N = True
 USE_TZ = True
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-REST_FRAMEWORK = {
+REST_FRAMEWORK = {  # pyright: ignore[reportUnknownVariableType]
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
@@ -89,23 +91,23 @@ REST_FRAMEWORK = {
 }
 from datetime import timedelta
 
-SIMPLE_JWT = {
+SIMPLE_JWT = {  # pyright: ignore[reportUnknownVariableType]
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
-SPECTACULAR_SETTINGS = {
+SPECTACULAR_SETTINGS = {  # pyright: ignore[reportUnknownVariableType]
     "TITLE": "Cinema API",
     "DESCRIPTION": "Cinema application API",
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 API_DOCS_ENABLED = (
-    os.getenv("API_DOCS_ENABLED", str(API_CONFIG.get("docs_enabled", False))).lower() == "true"
+    os.getenv("API_DOCS_ENABLED", str(API_CONFIG.get("docs_enabled", False))).lower() == "true"  # pyright: ignore[reportAny]
 )
 LOGGING_CONFIG = None
-LOGGING = {
+LOGGING = {  # pyright: ignore[reportUnknownVariableType]
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
@@ -117,6 +119,6 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
     "root": {
         "handlers": ["console"],
-        "level": os.getenv("LOG_LEVEL", LOGGING_VALUES.get("level", "INFO")),
+        "level": os.getenv("LOG_LEVEL", LOGGING_VALUES.get("level", "INFO")),  # pyright: ignore[reportAny]
     },
 }

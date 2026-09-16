@@ -16,7 +16,7 @@ from .dto import MovieDTO
 
 def _to_person(value: Actor | Director | Screenplay) -> ActorDTO | DirectorDTO | ScreenplayDTO:
     """Map a person entity to its public DTO."""
-    return {Actor: ActorDTO, Director: DirectorDTO, Screenplay: ScreenplayDTO}[type(value)](
+    return {Actor: ActorDTO, Director: DirectorDTO, Screenplay: ScreenplayDTO}[type(value)](  # pyright: ignore[reportUnknownVariableType]
         first_name=value.first_name, surname=value.surname
     )
 
@@ -25,7 +25,7 @@ def _to_name(
     value: Country | Genre | Language | Studio,
 ) -> CountryDTO | GenreDTO | LanguageDTO | StudioDTO:
     """Map a named entity to its public DTO."""
-    return {Country: CountryDTO, Genre: GenreDTO, Language: LanguageDTO, Studio: StudioDTO}[
+    return {Country: CountryDTO, Genre: GenreDTO, Language: LanguageDTO, Studio: StudioDTO}[  # pyright: ignore[reportUnknownVariableType]
         type(value)
     ](name=value.name)
 
@@ -68,23 +68,23 @@ def _countries(values: Iterable[Country]) -> tuple[CountryDTO, ...]:
 def movie_to_dto(movie: Movie) -> MovieDTO:
     """Map a movie entity and its prefetched relations to the public DTO."""
     return MovieDTO(
-        title=movie.title,
-        slug=movie.slug,
-        year=movie.year,
-        rating=movie.rating,
-        duration_in_minutes=movie.duration_in_minutes,
-        short_description=movie.short_description,
-        full_description=movie.full_description,
-        created_at=movie.created_at,
-        updated_at=movie.updated_at,
-        release_date=movie.release_date,
-        language=LanguageDTO(name=movie.language.name),
-        genres=_genres(movie.genres.all()),
-        screenplays=_screenplays(movie.screenplays.all()),
-        actors=_actors_named(movie.actors.all()),
-        studios=_studios(movie.studios.all()),
-        directors=_directors(movie.directors.all()),
-        countries=_countries(movie.countries.all()),
+        title=movie.title,  # pyright: ignore[reportArgumentType]
+        slug=movie.slug,  # pyright: ignore[reportArgumentType]
+        year=movie.year,  # pyright: ignore[reportArgumentType]
+        rating=movie.rating,  # pyright: ignore[reportArgumentType]
+        duration_in_minutes=movie.duration_in_minutes,  # pyright: ignore[reportArgumentType]
+        short_description=movie.short_description,  # pyright: ignore[reportArgumentType]
+        full_description=movie.full_description,  # pyright: ignore[reportArgumentType]
+        created_at=movie.created_at,  # pyright: ignore[reportArgumentType]
+        updated_at=movie.updated_at,  # pyright: ignore[reportArgumentType]
+        release_date=movie.release_date,  # pyright: ignore[reportArgumentType]
+        language=LanguageDTO(name=movie.language.name),  # pyright: ignore[reportUnknownMemberType]
+        genres=_genres(movie.genres.all()),  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+        screenplays=_screenplays(movie.screenplays.all()),  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+        actors=_actors_named(movie.actors.all()),  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+        studios=_studios(movie.studios.all()),  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+        directors=_directors(movie.directors.all()),  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+        countries=_countries(movie.countries.all()),  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
     )
 
 

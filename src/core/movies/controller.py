@@ -19,6 +19,6 @@ class MovieDetailView(APIView):
         },
         description="Retrieve movie data and related genres, screenplays, actors, studios, directors, and countries.",
     )
-    def get(self, request, slug: str) -> Response:
+    def get(self, request, slug: str) -> Response:  # pyright: ignore[reportMissingParameterType, reportUnknownParameterType]
         """Handle a movie detail GET request."""
         return Response(MovieSerializer(MovieService().get_movie(slug)).data)

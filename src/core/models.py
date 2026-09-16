@@ -2,7 +2,77 @@
 # Django intentionally reads these list values as model metadata.
 # ruff: noqa: RUF012
 
+from typing import cast
+
 from django.db import models
+
+# Django's ORM descriptors and declarative choices are not fully represented by
+# the installed third-party type stubs.
+
+
+class CinemaStatus(models.TextChoices):
+    """Availability states for a cinema location."""
+
+    ACTIVE = "active", "Active"
+    INACTIVE = "inactive", "Inactive"
+
+
+class HallType(models.TextChoices):
+    """Supported auditorium formats."""
+
+    STANDARD = "standard", "Standard"
+    IMAX = "imax", "IMAX"
+    VIP = "vip", "VIP"
+    THREE_D = "3d", "3D"
+
+
+class Cinema(models.Model):
+    """A physical cinema location."""
+
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
+    address = models.CharField(max_length=500)
+    city = models.CharField(max_length=100)
+    timezone = models.CharField(max_length=64)
+    phone = models.CharField(max_length=32, blank=True)
+    email = models.EmailField(blank=True)
+    status = models.CharField(
+        max_length=16,
+        choices=CinemaStatus.choices,  # pyright: ignore[reportUnknownMemberType]
+        default=CinemaStatus.ACTIVE,  # pyright: ignore[reportUnknownMemberType]
+    )
+
+    class Meta:
+        ordering = ["name"]
+        indexes = [
+            models.Index(fields=["city"], name="cinema_city_idx"),
+            models.Index(fields=["status"], name="cinema_status_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return cast(str, self.name)
+
+
+class Hall(models.Model):
+    """An auditorium belonging to one cinema."""
+
+    cinema = models.ForeignKey(Cinema, on_delete=models.CASCADE, related_name="halls")  # pyright: ignore[reportUnknownMemberType]
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100)
+    capacity = models.PositiveIntegerField()
+    hall_type = models.CharField(max_length=16, choices=HallType.choices, default=HallType.STANDARD)  # pyright: ignore[reportUnknownMemberType]
+    screen_configuration = models.JSONField(default=dict, blank=True)
+    accessibility = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(fields=["cinema", "slug"], name="unique_hall_slug_per_cinema")
+        ]
+        indexes = [models.Index(fields=["cinema", "hall_type"], name="hall_cinema_type_idx")]
+
+    def __str__(self) -> str:
+        return f"{cast(str, self.cinema.name)} - {cast(str, self.name)}"
 
 
 class Language(models.Model):
@@ -16,7 +86,7 @@ class Language(models.Model):
         indexes = [models.Index(fields=["name"], name="language_name_idx")]
 
     def __str__(self) -> str:
-        return self.name
+        return cast(str, self.name)
 
 
 class Genre(models.Model):
@@ -28,7 +98,7 @@ class Genre(models.Model):
         ordering = ["name"]
 
     def __str__(self) -> str:
-        return self.name
+        return cast(str, self.name)
 
 
 class Country(models.Model):
@@ -40,7 +110,7 @@ class Country(models.Model):
         ordering = ["name"]
 
     def __str__(self) -> str:
-        return self.name
+        return cast(str, self.name)
 
 
 class Studio(models.Model):
@@ -53,7 +123,7 @@ class Studio(models.Model):
         indexes = [models.Index(fields=["name"], name="studio_name_idx")]
 
     def __str__(self) -> str:
-        return self.name
+        return cast(str, self.name)
 
 
 class Actor(models.Model):
@@ -67,7 +137,7 @@ class Actor(models.Model):
         indexes = [models.Index(fields=["surname", "first_name"], name="actor_name_idx")]
 
     def __str__(self) -> str:
-        return f"{self.first_name} {self.surname}"
+        return f"{cast(str, self.first_name)} {cast(str, self.surname)}"
 
 
 class Screenplay(models.Model):
@@ -81,7 +151,7 @@ class Screenplay(models.Model):
         indexes = [models.Index(fields=["surname", "first_name"], name="screenplay_name_idx")]
 
     def __str__(self) -> str:
-        return f"{self.first_name} {self.surname}"
+        return f"{cast(str, self.first_name)} {cast(str, self.surname)}"
 
 
 class Director(models.Model):
@@ -95,7 +165,7 @@ class Director(models.Model):
         indexes = [models.Index(fields=["surname", "first_name"], name="director_name_idx")]
 
     def __str__(self) -> str:
-        return f"{self.first_name} {self.surname}"
+        return f"{cast(str, self.first_name)} {cast(str, self.surname)}"
 
 
 class MovieRating(models.TextChoices):
@@ -114,8 +184,8 @@ class Movie(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
     year = models.PositiveSmallIntegerField()
-    language = models.ForeignKey(Language, on_delete=models.PROTECT, related_name="movies")
-    rating = models.CharField(max_length=5, choices=MovieRating.choices)
+    language = models.ForeignKey(Language, on_delete=models.PROTECT, related_name="movies")  # pyright: ignore[reportUnknownMemberType]
+    rating = models.CharField(max_length=5, choices=MovieRating.choices)  # pyright: ignore[reportUnknownMemberType]
     duration_in_minutes = models.PositiveSmallIntegerField()
     short_description = models.TextField(blank=True)
     full_description = models.TextField(blank=True)
@@ -140,4 +210,4 @@ class Movie(models.Model):
         ]
 
     def __str__(self) -> str:
-        return self.title
+        return cast(str, self.title)
