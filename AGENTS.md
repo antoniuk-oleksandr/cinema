@@ -16,11 +16,14 @@ entire workflow; do not create another Python or shell orchestrator.
 
 The workflow is strictly sequential:
 
-```text
-Developer -> Tester -> Reviewer -> Done
-                 ^          |
-                 |----------+
-```
+1. Developer implements the task.
+2. Tester verifies the implementation.
+3. Reviewer evaluates the implementation and test evidence.
+4. Approved work is complete.
+5. Production findings return to Developer, then go through Tester and
+   Reviewer again.
+6. Testing or coverage findings return to Tester, then go through Reviewer
+   again.
 
 The Developer owns production code. The Tester owns tests and coverage. The
 Reviewer diagnoses and routes findings but does not modify production code or
