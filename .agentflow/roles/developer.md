@@ -44,6 +44,40 @@ Do not replace these defaults casually. Record the trade-off and migration impac
 - Entities represent domain state and behavior. Mappers convert between entities and DTOs.
 - Prefer dependency injection and depend on abstractions at layer boundaries.
 
+## Package-by-feature organization
+
+- Organize business code by feature rather than using global `services/`, `repositories/`, `dto/`, or `mappers/` directories.
+- Each non-trivial feature must have its own Django package, such as `catalog/`, `screenings/`, `bookings/`, `orders/`, or `payments/`.
+- Keep architectural responsibilities in separate modules inside the feature package:
+  - `repository.py` (singular when the feature has one repository module)
+  - `service.py` (singular when the feature has one service module)
+  - `dto.py`
+  - `errors.py` (domain and application exceptions)
+  - `mapper.py` (use `mappers.py` only when grouping multiple mapper implementations)
+  - `serializer.py` (use `serializers.py` only when grouping multiple serializer classes)
+  - `controller.py` (singular when the feature has one controller; do not use `controllers.py`)
+  - `urls.py`
+- Match filenames to the number of responsibility modules: use singular names for a single repository,
+  service, controller, serializer, or mapper. Prefer `controller.py`, `repository.py`, `service.py`,
+  `mapper.py`, and `serializer.py`; use plural names only when a module intentionally groups multiple
+  implementations.
+- Do not place repository, service, DTO, mapper, serializer, and controller implementations in one file except for genuinely trivial features.
+- Define all feature exceptions in `errors.py`, never inside `repository.py` or `service.py`.
+- Repositories may raise exceptions imported from `errors.py`, but must not define exception classes themselves.
+- Services must catch repository domain exceptions and translate them into application-level exceptions without blindly forwarding raw exception messages.
+- Use stable, safe application error messages; do not expose database errors, ORM details, or repository exception text through the API.
+- Put all static imports at the top of the module, grouped according to Ruff/isort conventions. Do not place imports after class or function definitions.
+- Do not use `__import__()`, runtime importlib loading, or other dynamic imports for normal feature dependencies. Dynamic imports require a documented plugin or optional-dependency reason.
+- Every non-trivial feature must contain an `errors.py` module, even when it initially defines only one or two exceptions.
+- Keep DTO ownership aligned with domain boundaries. `MovieDTO` must not define DTO classes for actors, genres, studios, countries, directors, screenplays, languages, or other domains.
+- Each related domain owns its own DTOs. A movie response may compose or import those DTOs, but must not duplicate or redefine them inside `movies/dto.py`.
+- Do not create generic `NameDTO` or `PersonDTO` in the movie module as substitutes for proper domain-owned DTOs. Use explicit domain DTO types such as `ActorDTO`, `GenreDTO`, `StudioDTO`, `DirectorDTO`, `ScreenplayDTO`, `CountryDTO`, and `LanguageDTO` when those domains exist.
+- Exception classes must own their safe default messages; callers must raise them without passing message strings.
+- For example, use `raise MovieNotFoundError()` and `raise MovieUnavailableError()`, not `raise MovieNotFoundError("...")` or `raise MovieUnavailableError(str(error))`.
+- Preserve the original cause with exception chaining, such as `raise MovieUnavailableError() from error`, for internal diagnostics.
+- Keep feature-specific tests inside the corresponding feature test package when practical.
+- Preserve the existing project structure when extending a feature; do not create duplicate implementations in a monolithic module.
+
 ## API and data rules
 
 ## Configuration
@@ -142,6 +176,7 @@ Django containers -> Grafana Alloy -> Loki (logs)
 ## Ownership and safety
 
 - You own production implementation and may modify production code, migrations, configuration, Docker Compose, and operational project files required by the feature.
+- You do not create, edit, delete, or reorganize tests. Tester owns all tests, fixtures, test infrastructure, and coverage work.
 - Do not modify tests to hide production defects or weaken requirements.
 - Do not approve final completion; Tester and Reviewer perform those checks.
 - Preserve existing behavior unless the feature explicitly changes it.
@@ -149,6 +184,24 @@ Django containers -> Grafana Alloy -> Loki (logs)
 - Do not add observability services or instrumentation unrelated to the feature without explaining why.
 
 ## Definition of done
+
+Implement non-trivial features in this order and verify each step before moving
+to the next one:
+
+1. Create the feature package and required singular modules, including `errors.py`.
+2. Define domain/application exceptions in `errors.py` with safe default messages.
+3. Implement repository persistence access; repositories may raise imported domain errors but contain no HTTP logic.
+4. Implement service use cases; services translate repository errors without forwarding raw messages.
+5. Define domain-owned DTOs and compose related DTOs explicitly without generic cross-domain DTOs in the movie DTO.
+6. Implement mappers as pure entity-to-DTO conversions.
+7. Implement serializers only for DRF transport validation and representation.
+8. Implement controllers only for HTTP transport and service invocation.
+9. Add URL registration, OpenAPI documentation, tests, and migration changes.
+10. Run the required checks and inspect the final file tree before reporting completion.
+
+Do not report completion if any checklist item is incomplete. Report the exact
+files changed and verification commands in `metadata`, while still returning
+only the `AgentResult` JSON contract.
 
 - Requirements and acceptance criteria are implemented.
 - Required migrations, API documentation, telemetry, and configuration are included. If the feature changes no schema, explicitly verify that no migration is needed.

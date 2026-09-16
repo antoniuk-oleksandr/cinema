@@ -22,7 +22,7 @@ def run(feature=None, task=None):
     timeout = Config.load(ROOT / "config/config.toml").pipeline.agent_timeout_seconds
     agents = {
         n: (
-            HerdrAdapter(sessions[n], timeout)
+            HerdrAdapter(sessions[n], ROOT, timeout)
             if sessions[n] and sessions[n].startswith("herdr:pane:")
             else CodexAdapter(n, ROOT, timeout, sessions[n])
         )

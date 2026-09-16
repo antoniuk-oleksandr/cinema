@@ -1,5 +1,6 @@
 import json
 import subprocess
+import time
 from pathlib import Path
 
 from agentflow.session_store import SessionStore
@@ -23,7 +24,8 @@ class HerdrProvisioner:
                 check=True,
             )
         except (OSError, subprocess.CalledProcessError) as exc:
-            raise HerdrProvisionError(str(exc)) from exc
+            details = getattr(exc, "stderr", "") or str(exc)
+            raise HerdrProvisionError(details.strip()) from exc
         try:
             return json.loads(result.stdout)
         except json.JSONDecodeError as exc:
@@ -66,17 +68,29 @@ class HerdrProvisioner:
                 pane_id = pane.get("pane_id")
                 if not pane_id:
                     raise HerdrProvisionError(f"Could not find pane ID in tab create result: {tab}")
-                self._run(
-                    "agent",
-                    "start",
-                    role,
-                    "--kind",
-                    "codex",
-                    "--pane",
-                    pane_id,
-                    "--timeout",
-                    "120000",
-                )
+                last_error: HerdrProvisionError | None = None
+                for attempt in range(3):
+                    try:
+                        self._run(
+                            "agent",
+                            "start",
+                            role,
+                            "--kind",
+                            "codex",
+                            "--pane",
+                            pane_id,
+                            "--timeout",
+                            "120000",
+                        )
+                        break
+                    except HerdrProvisionError as exc:
+                        last_error = exc
+                        if attempt < 2:
+                            time.sleep(1)
+                else:
+                    raise HerdrProvisionError(
+                        f"Could not start {role} after 3 attempts: {last_error}"
+                    ) from last_error
                 panes = self._run("pane", "list")["result"]["panes"]
                 pane = next((p for p in panes if p.get("pane_id") == pane_id), None)
             if not pane or not pane.get("pane_id"):

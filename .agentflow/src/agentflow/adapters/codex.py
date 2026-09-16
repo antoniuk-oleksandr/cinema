@@ -27,7 +27,16 @@ class CodexAdapter(Agent):
         self.session_id = session_id
 
     async def run(self, context: AgentContext) -> AgentResult:
-        prompt = f"Read .agentflow/roles/{self.role}.md. Task JSON: {context.task.model_dump_json()}. Return ONLY AgentResult JSON. State: {context.state}. Findings: {[x.model_dump() for x in context.findings]}"
+        role_contract = {
+            "developer": "Own production code only; do not modify tests. Finish with completed/tester.",
+            "tester": "Own tests and coverage only; do not modify production code. Pass with completed/reviewer.",
+            "reviewer": "Inspect actual files; modify nothing; never trust summaries; approve only after every rule is verified.",
+        }[self.role]
+        prompt = (
+            f"You are the {self.role} agent. {role_contract}\n"
+            f"Task JSON: {context.task.model_dump_json()}. Return ONLY AgentResult JSON. "
+            f"State: {context.state}. Recent findings: {[x.model_dump() for x in context.findings[-3:]]}"
+        )
         try:
             command = [
                 "codex",
