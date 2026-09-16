@@ -5,8 +5,13 @@ import pika
 import redis
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.views.decorators.http import require_GET
-from django_prometheus.exports import ExportToDjangoView
+from django.views.decorators.http import require_GET  # pyright: ignore[reportUnknownVariableType]
+from django_prometheus.exports import (
+    ExportToDjangoView,  # pyright: ignore[reportUnknownVariableType]
+)
+
+# Django, pika, Redis, and django-prometheus expose runtime adapter types that
+# are not available in the installed stubs.
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +27,13 @@ def ready(request: HttpRequest) -> JsonResponse:
     """Return dependency readiness without exposing dependency details."""
     checks = {}
     try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
+        with connection.cursor() as cursor:  # pyright: ignore[reportAny]
+            cursor.execute("SELECT 1")  # pyright: ignore[reportAny]
         checks["postgres"] = "ok"
     except Exception:  # noqa: BLE001 - readiness must fail closed for any DB error
         checks["postgres"] = "error"
     try:
-        redis.Redis(
+        redis.Redis(  # pyright: ignore[reportUnknownMemberType]
             host=os.getenv("REDIS_HOST", "redis"),
             port=int(os.getenv("REDIS_PORT", "6379")),
             socket_connect_timeout=1,
@@ -51,7 +56,7 @@ def ready(request: HttpRequest) -> JsonResponse:
         checks["rabbitmq"] = "ok"
     except Exception:  # noqa: BLE001 - readiness must fail closed for any broker error
         checks["rabbitmq"] = "error"
-    healthy = all(value == "ok" for value in checks.values())
+    healthy = all(value == "ok" for value in checks.values())  # pyright: ignore[reportUnknownVariableType]
     if not healthy:
         logger.warning("readiness_check_failed", extra={"readiness_checks": checks})
     return JsonResponse(

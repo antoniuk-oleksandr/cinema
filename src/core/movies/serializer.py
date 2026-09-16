@@ -2,6 +2,8 @@
 
 from rest_framework import serializers
 
+# DRF field descriptors are dynamically assigned by its serializer metaclass.
+
 
 class PersonSerializer(serializers.Serializer):
     """Serialize a contributor DTO."""
@@ -45,4 +47,4 @@ class ProblemDetailSerializer(serializers.Serializer):
     title = serializers.CharField()
     status = serializers.IntegerField()
     detail = serializers.CharField()
-    errors = serializers.JSONField()
+    errors = serializers.JSONField()  # pyright: ignore[reportAssignmentType]

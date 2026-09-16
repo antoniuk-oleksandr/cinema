@@ -43,6 +43,33 @@ Core application
 .. automodule:: core.movies.serializer
    :members:
 
+Cinema application
+------------------
+
+.. automodule:: core.cinemas.repository
+   :members:
+
+.. automodule:: core.cinemas.service
+   :members:
+
+.. automodule:: core.cinemas.errors
+   :members:
+
+.. automodule:: core.cinemas.dto
+   :members:
+
+.. automodule:: core.cinemas.mapper
+   :members:
+
+.. automodule:: core.cinemas.controller
+   :members:
+
+.. automodule:: core.cinemas.urls
+   :members:
+
+.. automodule:: core.cinemas.serializer
+   :members:
+
 .. automodule:: core.exceptions
    :members:
 

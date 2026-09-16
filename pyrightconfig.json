@@ -1,0 +1,23 @@
+{
+  "include": ["src"],
+  "exclude": ["**/migrations", "tests", "docs", "build"],
+  "typeCheckingMode": "basic",
+  "reportMissingTypeStubs": "none",
+  "reportMissingImports": "error",
+  "reportMissingParameterType": "warning",
+  "reportUnknownParameterType": "warning",
+  "reportUnknownMemberType": "warning",
+  "reportUnknownVariableType": "warning",
+  "reportAny": "warning",
+  "reportArgumentType": "warning",
+  "reportAssignmentType": "warning",
+  "reportAttributeAccessIssue": "warning",
+  "reportCallIssue": "warning",
+  "reportIndexIssue": "warning",
+  "reportMissingTypeArgument": "warning",
+  "reportOperatorIssue": "warning",
+  "reportOptionalIterable": "warning",
+  "reportOptionalMemberAccess": "warning",
+  "reportPrivateLocalImportUsage": "warning",
+  "reportReturnType": "warning"
+}

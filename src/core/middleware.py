@@ -16,7 +16,7 @@ class RequestContextMiddleware:
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
         """Propagate the request ID through the current HTTP request."""
-        value = request.headers.get("X-Request-ID", str(uuid.uuid4()))
+        value = request.headers.get("X-Request-ID", str(uuid.uuid4()))  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownVariableType]
         request_id.set(value)
         response = self.get_response(request)
         response["X-Request-ID"] = value
