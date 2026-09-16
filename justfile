@@ -25,13 +25,13 @@ test-integration:
 test-e2e:
     python -m pytest -q -m e2e
 
-# Generate Django migrations from model changes.
+# Generate Django migrations from model changes using the host-published database port.
 makemigrations:
-    python manage.py makemigrations
+    POSTGRES_HOST=localhost python manage.py makemigrations
 
-# Apply pending Django migrations to the configured database.
+# Apply pending Django migrations using the host-published database port.
 migrate:
-    python manage.py migrate
+    POSTGRES_HOST=localhost python manage.py migrate
 
 # Fail if model changes exist without a migration.
 migrate-check:
