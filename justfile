@@ -45,9 +45,11 @@ migrate-docker:
 coverage:
     python -m coverage run -m pytest && python -m coverage report --fail-under=90
 
-# Run Ruff static checks.
+# Run Ruff formatting/static checks and Based Pyright type checks.
 lint:
+    python -m ruff check .
     python -m ruff format --check .
+    python -m basedpyright
 
 # Format Python source files with Ruff.
 format:
