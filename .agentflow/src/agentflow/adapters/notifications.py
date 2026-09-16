@@ -4,6 +4,7 @@ import shutil
 
 log = logging.getLogger(__name__)
 
+
 class NotificationService:
     async def _notify(self, title, body) -> None:
         try:
