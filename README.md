@@ -207,9 +207,10 @@ The project is intended to contain unit tests, PostgreSQL/Redis/RabbitMQ integra
 
 The application’s own test suite uses pytest. This does not prescribe which testing tools future feature-specific agent rules may use in another project.
 
-## Agentflow
+## OpenClaw workflow
 
-`.agentflow/` contains the reusable Developer/Tester/Reviewer orchestration framework. It runs agents sequentially against the same working tree:
+OpenClaw provides the project’s Developer/Tester/Reviewer workflow. It runs
+one persistent task session through all stages against the same working tree:
 
 ```text
 Developer -> Tester -> Reviewer -> DONE
@@ -218,17 +219,21 @@ Developer -> Tester -> Reviewer -> DONE
                  +----------- test issue -------> Tester
 ```
 
-The orchestrator owns all routing. Any production-code change must pass through Tester before Reviewer can approve it. Herdr manages persistent agent sessions when available; Codex communication is hidden behind adapters.
+The `main` agent owns all routing. Any production-code change must pass
+through Tester before Reviewer can approve it. A new user task creates one new
+task session; retries and stage handoffs reuse that session.
 
 Customize the project-specific rules here:
 
 ```text
-.agentflow/roles/developer.md
-.agentflow/roles/tester.md
-.agentflow/roles/reviewer.md
+.openclaw/roles/developer.md
+.openclaw/roles/tester.md
+.openclaw/roles/reviewer.md
 ```
 
-See [.agentflow/README.md](.agentflow/README.md) for Agentflow setup, persistent sessions, mock mode, runtime state, and recovery procedures.
+See [.openclaw/README.md](.openclaw/README.md) for team setup and local
+configuration. Credentials, session state, and personal memory remain
+machine-local.
 
 ## Current status
 
@@ -243,7 +248,7 @@ Implemented foundation:
 - JSON logging and OpenTelemetry foundation
 - Grafana, Loki, Prometheus, Tempo, and Alloy setup
 - Initial catalog model design
-- Agentflow orchestration framework
+- OpenClaw Developer/Tester/Reviewer workflow
 
 Not implemented yet:
 

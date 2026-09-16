@@ -47,7 +47,7 @@ coverage:
 
 # Run Ruff static checks.
 lint:
-    python -m ruff check .
+    python -m ruff format --check .
 
 # Format Python source files with Ruff.
 format:
