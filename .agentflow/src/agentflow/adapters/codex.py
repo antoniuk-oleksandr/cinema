@@ -18,7 +18,9 @@ class InvalidAgentResultError(AdapterError):
 
 
 class CodexAdapter(Agent):
-    def __init__(self, role: str, cwd: Path, timeout: float = 3600, session_id: str | None = None) -> None:
+    def __init__(
+        self, role: str, cwd: Path, timeout: float = 3600, session_id: str | None = None
+    ) -> None:
         self.role = role
         self.cwd = cwd
         self.timeout = timeout
