@@ -5,7 +5,8 @@ from pydantic import BaseModel, Field
 
 
 class PipelineConfig(BaseModel):
-    max_iterations: int = Field(8, ge=1)
+    # A production/test/review cycle can consume three agent invocations.
+    max_iterations: int = Field(12, ge=1)
     agent_timeout_seconds: float = Field(3600, gt=0)
 
 

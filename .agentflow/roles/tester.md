@@ -24,6 +24,13 @@ The measured code coverage must be at least 90% for the feature’s affected pro
 - Prefer repeatable commands exposed through the `justfile`.
 - Test infrastructure should use Docker/Testcontainers rather than requiring manually installed local PostgreSQL, RabbitMQ, or Redis.
 
+## Required handoff routes
+
+- Production defect found: return `status: changes_required`, `route: developer`.
+- Test, fixture, or coverage work is needed: return `status: changes_required`, `route: tester`.
+- Testing is complete and all requirements pass: return `status: completed`, `route: reviewer`.
+- Never return `route: tester` for a successful completed test run.
+
 ## Database migration verification
 
 - Django migrations are the only authoritative schema migration mechanism for this project.

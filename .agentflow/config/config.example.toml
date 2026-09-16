@@ -1,5 +1,5 @@
 [pipeline]
-max_iterations = 8
+max_iterations = 12
 agent_timeout_seconds = 3600
 [agents]
 developer = "developer"
