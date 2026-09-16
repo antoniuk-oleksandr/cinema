@@ -31,6 +31,23 @@ The measured code coverage must be at least 90% for the feature’s affected pro
 - Testing is complete and all requirements pass: return `status: completed`, `route: reviewer`.
 - Never return `route: tester` for a successful completed test run.
 
+## Required architectural verification
+
+Before reporting a pass, inspect the changed feature package and verify every
+item below rather than relying only on test output:
+
+- `errors.py` exists and owns all feature exception classes.
+- `repository.py` contains persistence access only and imports, rather than defines, domain errors.
+- `service.py` contains use-case orchestration and translates errors with safe messages.
+- `dto.py` does not define DTOs owned by other domains or generic `NameDTO`/`PersonDTO` substitutes.
+- `mapper.py` contains mapping only.
+- `serializer.py` contains DRF transport serialization/validation only.
+- `controller.py` contains HTTP transport only.
+- The feature uses singular module names and package-by-feature organization.
+
+Report every failed checklist item as an issue. Do not return a pass merely
+because tests, lint, or coverage succeed.
+
 ## Database migration verification
 
 - Django migrations are the only authoritative schema migration mechanism for this project.

@@ -18,6 +18,27 @@ The project defaults are Django REST Framework with Django ORM, `djangorestframe
 - Python and Django usage is consistent with the existing project.
 - Layered architecture is respected: controller/API, service, repository, DTO, entity, and mapper responsibilities are separated.
 - SOLID principles are followed and business logic is not placed in controllers, serializers, or infrastructure glue without justification.
+- Business code is organized by feature, not only by technical layer. Non-trivial features use separate
+  singular-named modules: `errors.py`, `repository.py`, `service.py`, `dto.py`, `mapper.py`, `serializer.py`,
+  `controller.py`, and `urls.py`.
+- Reject monolithic feature modules that combine the repository, service, DTO, mapper, serializer, and controller responsibilities without a strong justification.
+- Use responsibility-appropriate filenames: a feature with one controller must use `controller.py`, not
+  `controllers.py`; apply the same singular naming rule to `repository.py` and `service.py`. Reserve
+  plural filenames for modules that intentionally contain multiple implementations.
+- For the movie feature, `src/core/movies.py` is not an acceptable final structure when it contains repository, service, DTO, and mapper implementations together. Require these responsibilities to be split into separate movie modules before approving.
+- Every non-trivial feature must have `errors.py` for its domain and application exceptions.
+- Domain and application exceptions must be defined in `src/core/movies/errors.py`, not in `repository.py` or `service.py`.
+- A repository may raise an exception imported from `errors.py`, but it must not own the definition of that exception.
+- The service must catch repository domain exceptions and translate them to stable application exceptions without passing through `str(error)` or leaking ORM/database details.
+- Reject the feature if `MovieNotFoundError` is defined in `repository.py`, or if the service constructs an application exception from the raw repository message.
+- Verify that all static imports are at the top of each module and follow Ruff/isort ordering. Treat imports placed after definitions as a finding.
+- Reject unnecessary dynamic imports such as `__import__()` or runtime importlib loading for ordinary feature dependencies; allow them only for a documented plugin or optional-dependency boundary.
+- Reject the feature if `service.py` or `repository.py` declares an exception class, or if `errors.py` is missing.
+- Enforce DTO ownership by domain. Reject a `MovieDTO` that defines generic or unrelated DTOs such as `NameDTO` or `PersonDTO` for actors, genres, studios, countries, directors, screenplays, or languages.
+- Related domain DTOs must be defined by their owning domains and explicitly composed or imported by the movie response. Do not duplicate other domain models inside `movies/dto.py`.
+- Prefer explicit types such as `ActorDTO`, `GenreDTO`, `StudioDTO`, `DirectorDTO`, `ScreenplayDTO`, `CountryDTO`, and `LanguageDTO` when those domain modules exist.
+- Exception classes must define their own safe default messages. Reject `raise SomeError("...")` when the message belongs to the exception type, and reject `raise ApplicationError(str(error))`.
+- Require message-free raises such as `raise MovieNotFoundError()` and `raise MovieUnavailableError()`, with `raise MovieUnavailableError() from error` when translating exceptions.
 - PostgreSQL, RabbitMQ, and Redis are used through the project’s Docker Compose infrastructure.
 - Local infrastructure belongs under `infra/local/docker-compose.yaml`.
 - Docker images are lightweight where practical.
@@ -54,6 +75,22 @@ The project defaults are Django REST Framework with Django ORM, `djangorestframe
 - A `justfile` exposes practical commands for startup, shutdown, logs, tests, coverage, linting, and formatting where appropriate.
 
 ## Definition of done
+
+Approval is a gated decision, not a summary of test output. Before returning
+`approved`, inspect the actual changed files and verify each item explicitly:
+
+1. Feature package uses singular modules: `errors.py`, `repository.py`, `service.py`, `dto.py`, `mapper.py`, `serializer.py`, `controller.py`, and `urls.py` where applicable.
+2. All feature exceptions are defined in `errors.py`; neither repository nor service declares exception classes.
+3. Exception classes own safe default messages; services do not pass through `str(error)`.
+4. Repository, service, DTO, mapper, serializer, and controller responsibilities are separate.
+5. Movie DTO does not define unrelated domain DTOs or generic `NameDTO`/`PersonDTO` replacements.
+6. Serializer is limited to DRF transport representation and validation.
+7. Tests cover the real repository/service boundary and the complete public response.
+8. Documentation, migration checks, lint, tests, and coverage pass.
+
+If any item is unverified or false, return `changes_required` with a precise
+issue and route it to `developer`, `tester`, or `both`. Never approve based
+only on an agent's summary or a passing test count.
 
 - Requirements and acceptance criteria are satisfied.
 - Migrations and documentation are included when needed.

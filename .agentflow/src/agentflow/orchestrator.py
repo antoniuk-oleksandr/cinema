@@ -30,6 +30,7 @@ class Orchestrator:
         self.state = PipelineState.DEVELOPMENT
         self.history = []
         self.log = logging.getLogger("agentflow")
+        self.result_signatures: list[str] = []
 
     def _event(self, old, new, agent, result, reason="") -> None:
         e = {
@@ -69,6 +70,12 @@ class Orchestrator:
                 self.state = PipelineState.HUMAN_REQUIRED
                 break
             findings.append(result)
+            signature = result.model_dump_json(exclude_none=True, by_alias=True)
+            self.result_signatures.append(signature)
+            if len(self.result_signatures) >= 3 and self.result_signatures[-3:] == [signature] * 3:
+                self.log.error("same agent result repeated three times; stopping safely")
+                self.state = PipelineState.HUMAN_REQUIRED
+                break
             route = result.route
             if self.state == PipelineState.DEVELOPMENT and route == Route.TESTER:
                 new = PipelineState.TESTING

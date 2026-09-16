@@ -1,6 +1,7 @@
 import asyncio
 import json
 import subprocess
+from pathlib import Path
 
 from agentflow.agents.base import Agent, AgentContext
 from agentflow.models import AgentResult
@@ -11,8 +12,9 @@ from .codex import AdapterError, AgentTimeoutError, InvalidAgentResultError
 class HerdrAdapter(Agent):
     """Run a persistent Codex agent through a Herdr pane."""
 
-    def __init__(self, pane_id: str, timeout: float = 3600) -> None:
+    def __init__(self, pane_id: str, root: Path, timeout: float = 3600) -> None:
         self.pane_id = pane_id.removeprefix("herdr:pane:")
+        self.root = root
         self.timeout = timeout
 
     @staticmethod
@@ -113,13 +115,38 @@ class HerdrAdapter(Agent):
                 "a passing test run must use status completed and route reviewer; "
                 "only test work still needed may use status changes_required and route tester"
             ),
-            "review": "approval must use status approved and route done",
+            "review": (
+                "approval must use status approved and route done; "
+                "package-by-feature structure is mandatory, and a non-trivial feature "
+                "must not combine repository, service, DTO, mapper, serializer, and "
+                "controller code in one file; use singular responsibility filenames such as "
+                "controller.py when there is one controller, not controllers.py"
+            ),
         }[context.state]
+        role_contract = {
+            "developer": (
+                "You own production code only. Do not create, edit, or delete tests. "
+                "Use package-by-feature with errors.py, repository.py, service.py, dto.py, "
+                "mapper.py, serializer.py, controller.py, and urls.py as applicable. "
+                "Exceptions belong in errors.py. Finish with completed/tester."
+            ),
+            "tester": (
+                "You own tests, fixtures, and coverage only. Do not modify production code "
+                "and do not perform the Reviewer's architecture approval. Verify the feature "
+                "and report production defects to developer. Pass with completed/reviewer."
+            ),
+            "reviewer": (
+                "You are the final source-level reviewer. Do not modify code or tests. Inspect "
+                "the actual changed files, including errors.py, DTO ownership, singular module "
+                "names, service/repository boundaries, and exception messages. Never trust "
+                "previous summaries. Approve only when every rule is verified."
+            ),
+        }[role]
         prompt = (
-            f"Read .agentflow/roles/{role}.md. "
+            f"You are the {role} agent. {role_contract}\n\n"
             f"Task JSON: {context.task.model_dump_json()}. "
             f"Return ONLY AgentResult JSON. State: {context.state}. "
             f"Handoff rule: {handoff}. "
-            f"Findings: {[item.model_dump() for item in context.findings]}"
+            f"Recent findings: {[item.model_dump() for item in context.findings[-3:]]}"
         )
         return await asyncio.wait_for(asyncio.to_thread(self._run, prompt), self.timeout)
