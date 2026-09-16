@@ -1,0 +1,67 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "/absolute/path/to/cinema",
+      "systemAgent": {
+        "agentId": "main"
+      },
+      "subagents": {
+        "allowAgents": [
+          "developer",
+          "tester",
+          "reviewer"
+        ],
+        "model": "openai/gpt-5.6-luna"
+      },
+      "model": {
+        "primary": "openai/gpt-5.6-luna"
+      }
+    },
+    "ownership": "explicit",
+    "entries": {
+      "main": {
+        "name": "main",
+        "workspace": "/absolute/path/to/cinema",
+        "model": "openai/gpt-5.6-luna",
+        "subagents": {
+          "allowAgents": [
+            "developer",
+            "tester",
+            "reviewer"
+          ]
+        }
+      },
+      "developer": {
+        "name": "developer",
+        "workspace": "/absolute/path/to/cinema",
+        "model": "openai/gpt-5.6-luna"
+      },
+      "tester": {
+        "name": "tester",
+        "workspace": "/absolute/path/to/cinema",
+        "model": "openai/gpt-5.6-luna"
+      },
+      "reviewer": {
+        "name": "reviewer",
+        "workspace": "/absolute/path/to/cinema",
+        "model": "openai/gpt-5.6-luna"
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "codex": {
+        "enabled": true
+      }
+    }
+  },
+  "tools": {
+    "profile": "coding",
+    "agentToAgent": {
+      "enabled": true
+    },
+    "sessions": {
+      "visibility": "all"
+    }
+  }
+}

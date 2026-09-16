@@ -24,6 +24,17 @@ htmlcov/
 *.sqlite3
 *.sqlite3-journal
 
+# OpenClaw local credentials, sessions, logs, and memory
+.openclaw/openclaw.json
+.openclaw/runtime/
+.openclaw/memory/
+openclaw.json
+openclaw-state/
+/IDENTITY.md
+/SOUL.md
+/USER.md
+/memory/
+
 # IDE and OS files
 .idea/
 .vscode/
